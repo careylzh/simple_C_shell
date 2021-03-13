@@ -6,6 +6,7 @@ Task 3 is cray cray
  ### what students had to do
  - loop the shell to only exit upon typing exit
  - tokenisation arguments (parser to decide when to fork/when not to fork)
+ - simple daemon summoning using forks and chdir etc, and keep track of your daemons inside 
 
 
 
