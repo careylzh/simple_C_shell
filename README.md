@@ -1,7 +1,7 @@
 # simple_C_shell
 Task 3 is cray cray
 
-2 branches with unrelated histories because i:
+There were 2 branches had unrelated histories because i:
 
 git clone an existing repository, initialised new repo with readmefile, changed remote branch to this branch 
 
