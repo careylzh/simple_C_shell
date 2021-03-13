@@ -1,8 +1,11 @@
 # simple_C_shell
 Task 3 is cray cray
 
-
-
+ - sys calls that don't require forking were already implemented, just had to write functions to call the resp files 
+ 
+ ### what students had to do
+ - loop the shell to only exit upon typing exit
+ - tokenisation arguments (parser to decide when to fork/when not to fork)
 
 
 
