@@ -13,26 +13,61 @@
 #include "shellPrograms.h"
 
 //TODO: change to appropriate path
-char *path = "/Users/natalie_agus/Dropbox/50.005 Computer System Engineering/2020/PA1 Makeshell Daemon/PA1/logfile_test.txt";
+char *path = "../logfile_test.txt";
+//controlling terminal becomes the root at the end of create_daemon cuz of the chdir("/") line. meaning the logfile_test.txt will be created at root. before the second fork
 
 /*This function summons a daemon process out of the current process*/
 static int create_daemon()
 {
-
     /* TASK 7 */
     // Incantation on creating a daemon with fork() twice
+    pid_t child = fork();     // 1. Fork() from the parent process
+     // 2. Close parent with exit(1) 
+    if (child == -1){
+        printf("fork unsuccessful");
+        return 1;       
+    } else if (child > 0){
+        exit(1);
+    }
 
-    // 1. Fork() from the parent process
-    // 2. Close parent with exit(1)
-    // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
+    pid_t sid = setsid();     // 3. On child process (this is intermediate process), call setsid() so that the child becomes session leader to lose the controlling TTY
+
+    if (sid == -1) {
+        exit(1);
+    }
+
     // 4. Ignore SIGCHLD, SIGHUP
-    // 5. Fork() again, parent (the intermediate) process terminates
-    // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init)
-    // 7. Change working directory to root
-    // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
-    // 9. Return to main
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
 
-    return 1;
+    // 5. Fork() again, parent (the intermediate) process terminates
+    child = fork(); //intermediate process calls fork, creates target daemon
+    if (child == -1){
+        printf("fork unsuccessful");
+        return 1;
+        
+    } 
+    else if (child > 0){
+        exit(1);
+    }
+    // 6. Child process (the daemon) set new file permissions using umask(0). Daemon's PPID at this point is 1 (the init), NOT octal
+    umask(0);
+    chdir("/");      // 7. Change working directory to root
+    /*If a daemon were to leave its current working directory unchanged then
+     this would prevent the filesystem containing that directory 
+     from being unmounted while the daemon was running. 
+     It is therefore good practice for daemons to change their working directory to a safe location. 
+    */
+    for (int x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
+        close(x);
+    }
+    // 8. Close all open file descriptors using sysconf(_SC_OPEN_MAX) and redirect fd 0,1,2 to /dev/null
+    stdin=fopen("/dev/null","r");   //fd=0, according to screenshot,  stdin is mapped to fd0, etc etc
+    stdout=fopen("/dev/null","w+");  //fd=1
+    stderr=fopen("/dev/null","w+");  //fd=2
+
+    // 9. Return to main
+    return 0;
 }
 
 static int daemon_work()
@@ -54,8 +89,6 @@ static int daemon_work()
     while (1)
     {
 
-        //use appropriate location if you are using MacOS or Linux
-        //TODO: Change to appropriate path
         fptr = fopen(path, "a");
 
         if (fptr == NULL)

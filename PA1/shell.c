@@ -131,7 +131,7 @@ int shellListDir(char **args)
     printf("fork failed. sad. \n");
     exit(1); //rmb to close prog properly
   }
-  else if(pid == 0){
+  else if(pid == 0){ //if pid no 0 means child process not done, go to do while
      // 2. Check if execvp is successful by checking its return value
     //progress fails to execute sucessfully
      if(execvp("./shellPrograms/listdir", args) < 0){
@@ -140,7 +140,7 @@ int shellListDir(char **args)
    }
   }
    else{
-     do {
+     do { 
       waitpid(pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
   }
@@ -172,11 +172,11 @@ int shellCountLine(char **args)
      // 2. Check if execvp is successful by checking its return value
     //progress fails to execute sucessfully
      if(execvp("./shellPrograms/countline", args) < 0){
-     printf("Invalid directory for target executable of CountLine\n");
+     printf("Invalid file for target executable of CountLine\n");
      exit(1);
    }
   }
-   else{
+  else{
      do {
       waitpid(pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
@@ -197,8 +197,25 @@ int shellSummond(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellDaemonize if execvp fails to allow loop to continue
-
+  pid_t pid;
+  int status;
+  if((pid = fork())<0){
+    printf("Fork Failed\n");
+    exit(1);
+  }
+  else if(pid == 0){
+    if(execvp("./shellPrograms/summond", args)<0){
+      printf("Invalid directory provided for Summond executable\n");
+      exit(1);
+    }  
+  }
+  else{
+    do {
+          waitpid(pid, &status, WUNTRACED);
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+      }
   return 1;
+  
 }
 
 /**
@@ -215,7 +232,23 @@ int shellCheckDaemon(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellCheckDaemon if execvp fails to allow loop to continue
-
+  pid_t pid;
+  int status;
+  if((pid = fork())<0){
+    printf("Fork Failed\n");
+    exit(1);
+  }
+  else if(pid == 0){
+    if(execvp("./shellPrograms/checkdaemon", args)<0){
+      printf("Invalid directory provided for Summond executable\n");
+      exit(1);
+    }  
+  }
+  else{
+    do {
+          waitpid(pid, &status, WUNTRACED);
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+      }
   return 1;
 }
 
@@ -359,7 +392,7 @@ int shellExecuteInput(char **args)
     if (argIsValid && index > 3) {
       pid_t pid_child = fork();
       pid_t parentid;
-      int stat_loc;
+      int status;
       if (pid_child < 0) { 
         fprintf(stderr, "Fork failed.\n"); }
       else if (pid_child == 0) {
@@ -367,7 +400,7 @@ int shellExecuteInput(char **args)
         exit(1); }
       else {
         fprintf(stderr, "Fork works, waiting for child process\n");
-        parentid = waitpid(pid_child, &stat_loc, WUNTRACED); //turn value into pointer
+        parentid = waitpid(pid_child, &status, WUNTRACED); //turn value into pointer
         return parentid; }
     }
     else if (argIsValid && index < 3){
@@ -398,15 +431,13 @@ char *shellReadLine(void)
     exit(1);
   }
   // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
-  // 4. Return the char*
   getline(&buffer, &bufferSize, stdin);
-  return buffer;
+  return buffer; // 4. Return the char* //is a string tho
 }
 
 /**
  Receives the *line, and return char** that tokenize the line
 **/
-
 char **shellTokenizeInput(char *line)
 {
 
