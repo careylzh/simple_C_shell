@@ -1,5 +1,7 @@
 #include "shell.h"
-#include <stdbool.h>
+typedef int bool;
+#define true 1
+#define false 0
 
 /*
  List all files matching the name in args[1] under current directory and subdirectories
